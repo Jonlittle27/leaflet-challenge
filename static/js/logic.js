@@ -13,16 +13,28 @@ d3.json(url).then((earthquakeData) => {
 function createFeatures(earthquakeData) {
 
     // Define a function we want to run once for each feature in the features array
+    function onEachLayer (feature) {
+      return new L.circleMarker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]], {
+        fillOpacity: .7,
+        color: markerColor(feature.properties.mag),
+        fillColor: markerColor(feature.properties.mag),
+        radius: markerSize(feature.properties.mag)
+      });
+    }
     // Give each feature a popup describing the place and time of the earthquake
     function onEachFeature(feature, layer) {
       layer.bindPopup("<h3>" + feature.properties.place +
-        "</h3><hr><p>" + new Date(feature.properties.time) + "</p>");
+        "</h3><hr><p>" + new Date(feature.properties.time) + "</p>" +
+        "<p>" + "Magnitude of " + feature.properties.mag + "</p>");
+      
+            
     }
   
     // Create a GeoJSON layer containing the features array on the earthquakeData object
     // Run the onEachFeature function once for each piece of data in the array
     var earthquakes = L.geoJSON(earthquakeData, {
-      onEachFeature: onEachFeature
+      onEachFeature: onEachFeature,
+      pointToLayer: onEachLayer
     });
   
     // Sending our earthquakes layer to the createMap function
@@ -43,12 +55,55 @@ function createMap(earthquakes) {
 
     var myMap = L.map("map", {
       center: [
-        37.09, -95.71
+        35.4676, -97.5164
         ],
-      zoom: 5,
+      zoom: 4,
       layers: [map, earthquakes]
-      }).addTo(myMap);
+      });
 
+    L.control.layers(baseMaps, overlayMaps, {
+      collapsed: true
+    }).addTo(myMap);
+    
+    var legend = L.control({
+      position: "bottomright"
+    })
+
+    legend.onAdd = function(myMap) {
+      var div = L.DomUtil.create("div", "legend"),
+      labels = ["0-1", "1-2", "2-3", "3-4", "4-5", "5+"];
+      colors = ["green", "greenyellow", "yellowgreen", "yellow", "orange", "red"];
+      return div;
+    }
+
+    legend.addTo(myMap);
 }
 
+function markerColor(feature) {
+  if (feature > 5) {
+    return "red"
+  }
 
+  else if (feature >= 4) {
+    return "orangered"
+  } 
+  
+  else if (feature >= 3) {
+    return "orange"
+  }
+
+  else if (feature >= 2) {
+    return "yellow"
+  }
+
+  else if (feature >= 1) {
+    return "yellowgreen"
+  }
+  else {
+    return "greenyellow"
+  }
+};
+
+function markerSize(feature) {
+  return feature * 3;
+}
