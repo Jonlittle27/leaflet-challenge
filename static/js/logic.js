@@ -21,7 +21,7 @@ function createFeatures(earthquakeData) {
         radius: markerSize(feature.properties.mag)
       });
     }
-    // Give each feature a popup describing the place and time of the earthquake
+    // Give each feature a popup describing the place, mag, and time of the earthquake
     function onEachFeature(feature, layer) {
       layer.bindPopup("<h3>" + feature.properties.place +
         "</h3><hr><p>" + new Date(feature.properties.time) + "</p>" +
@@ -61,22 +61,28 @@ function createMap(earthquakes) {
       layers: [map, earthquakes]
       });
 
-    L.control.layers(baseMaps, overlayMaps, {
-      collapsed: true
-    }).addTo(myMap);
     
-    var legend = L.control({
-      position: "bottomright"
-    })
+  var info = L.control({
+    position: "bottomright"
+  });
 
-    legend.onAdd = function(myMap) {
-      var div = L.DomUtil.create("div", "legend"),
+  // When the layer control is added, insert a div with the class of "legend"
+  info.onAdd = function() {
+    var div = L.DomUtil.create("div", "legend"),
       labels = ["0-1", "1-2", "2-3", "3-4", "4-5", "5+"];
       colors = ["green", "greenyellow", "yellowgreen", "yellow", "orange", "red"];
-      return div;
-    }
 
-    legend.addTo(myMap);
+    for (var i = 0; i < labels.length; i++) {
+      div.innerHTML += '<i style="background:' + markerColor(i) + '"></i> ' +
+              labels[i] + '<br>' ;
+    }
+    return div;
+  };
+  // Add the info legend to the map
+  info.addTo(myMap);
+
+
+
 }
 
 function markerColor(feature) {
